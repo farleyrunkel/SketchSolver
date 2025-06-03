@@ -1,5 +1,5 @@
-﻿#ifndef SKETCHSOLVER_CONSTRAINTS_dasdSOLVER_H
-#define SKETCHSOLVER_CONSTRAINTS_dasdSOLVER_H
+﻿#ifndef SKETCHSOLVER_BFGSSOLVER_H
+#define SKETCHSOLVER_BFGSSOLVER_H
 
 #include <map>
 #include <memory>
@@ -34,8 +34,8 @@ private:
     double** xsave;
 
 public:
-    virtual double GetElement(size_t i) { return x[i]; };
-    virtual void SetElement(size_t i, double v) { x[i] = v; }
+    virtual double element(size_t i) { return x[i]; };
+    virtual void setElement(size_t i, double v) { x[i] = v; }
 
     virtual int solve() 
     {
@@ -47,7 +47,7 @@ public:
 
         int ret = solveI(xin.data(), xin.size(), constraints_.data(), constraints_.size(), 1);
 
-        Unload();
+        unload();
         deallocate();
 
         return ret;
@@ -94,7 +94,7 @@ public:
 
         for(int i = 0; i < consLength; i++)
         {
-			LoadConstraint(cons[i]);
+			loadConstraint(cons[i]);
         }
 
         xLength = variantSize();
@@ -130,7 +130,7 @@ public:
         pert = f0 * pertMag;
         for(int j = 0; j < xLength; j++)
         {
-            grad[j] = GetGradient(j, pert);
+            grad[j] = calGradient(j, pert);
             ftimes++;
 #ifdef DEBUG
             cstr << "gradient: " << grad[j];
@@ -292,7 +292,7 @@ public:
             for(int i = 0; i < xLength; i++)
             {
                 //Calculate the new gradient vector
-                gradnew[i] = GetGradient(i, pert);
+                gradnew[i] = calGradient(i, pert);
                 ftimes++;
                 //Calculate the change in the gradient
                 gamma[i] = gradnew[i] - grad[i];
@@ -566,4 +566,4 @@ public:
 
 }  
 
-#endif // SKETCHSOLVER_CONSTRAINTS_dasdSOLVER_H
+#endif // SKETCHSOLVER_BFGSSOLVER_H

@@ -1,5 +1,5 @@
-﻿#ifndef SKETCHSOLVER_CONSTRAINTS_SOLVER_H
-#define SKETCHSOLVER_CONSTRAINTS_SOLVER_H
+﻿#ifndef SKETCHSOLVER_SOLVER_H
+#define SKETCHSOLVER_SOLVER_H
 
 
 #include <vector>
@@ -39,18 +39,18 @@ public:
         return myvec.size();
     }
 
-    virtual double GetElement(size_t i) = 0;
-    virtual void SetElement(size_t i, double v) = 0;
+    virtual double element(size_t i) = 0;
+    virtual void setElement(size_t i, double v) = 0;
     virtual int solve() = 0;
 
-    void Unload() 
+    void unload() 
     {	
         //For every item in mapparms, copy variable from vector into pointer
         for(auto it = mapparms.begin(); it != mapparms.end(); ++it)
         {
             int parm = (*it).second;
             Param location = (*it).first;
-            *location = GetElement(parm);
+            *location = element(parm);
         }
     }
 
@@ -63,8 +63,8 @@ public:
 		return totalError;
     }
 
-    double GetError(int i) { return constraints_[i]->error(); }
-	double GetError(const ConstraintPtr& constraint)
+    double computeError(int i) { return constraints_[i]->error(); }
+	double computeError(const ConstraintPtr& constraint)
 	{
 		auto it = std::find(constraints_.begin(), constraints_.end(), constraint);
 		if(it != constraints_.end())
@@ -74,41 +74,41 @@ public:
 		return 0.0; // or throw an exception
 	}
 
-	void LoadConstraint(const std::shared_ptr<Constraint>& constraint) 
+	void loadConstraint(const std::shared_ptr<Constraint>& constraint) 
     {
 		auto params = constraint->parameters();
         std::vector<Param> vecs;
         for(const auto& param : params)
         {
-			LoadParam(constraint, param, vecs);
+			loadParam(constraint, param, vecs);
         }
 		constraintvars[constraint] = vecs;
 		constraints_.push_back(constraint);
     }
 
-    double GetErrorForGrad(int i)
+    double catErrorForGrad(int i)
     {
         double error = 0;
         for(unsigned int j = 0; j < vecmap[i].size(); j++)
         {
-            error += GetError(vecmap[i][j]);
+            error += computeError(vecmap[i][j]);
         }
         return error;
     }
 
-    double GetGradient(int i, double pert)
+    double calGradient(int i, double pert)
     {
-        double OldValue = GetElement(i);
-        SetElement(i, OldValue - pert);
-        double e1 = GetErrorForGrad(i);
-        SetElement(i, OldValue + pert);
-        double e2 = GetErrorForGrad(i);
-        SetElement(i, OldValue);
+        double OldValue = element(i);
+        setElement(i, OldValue - pert);
+        double e1 = catErrorForGrad(i);
+        setElement(i, OldValue + pert);
+        double e2 = catErrorForGrad(i);
+        setElement(i, OldValue);
         return 0.5 * (e2 - e1) / pert;
     }
 
 private:
-    void LoadParam(const std::shared_ptr<Constraint>& c, const Param& param, std::vector<Param>& mylist)
+    void loadParam(const std::shared_ptr<Constraint>& c, const Param& param, std::vector<Param>& mylist)
     {
         if(param.isConstant())
         {
@@ -134,4 +134,4 @@ private:
 };
 
 }
-#endif // SKETCHSOLVER_CONSTRAINTS_SOLVER_H
+#endif // SKETCHSOLVER_SOLVER_H
