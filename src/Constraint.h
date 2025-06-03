@@ -45,6 +45,9 @@ public:
     /// @return Vector of parameters.
     virtual std::vector<Param> parameters() const = 0;
 
+	/// @brief Checks if a parameter is variant.
+    virtual void checkPrameters() { return; }
+
     /// @brief Checks if the constraint is valid.
     /// @return True if all parameters are valid.
     virtual bool isValid() const = 0;

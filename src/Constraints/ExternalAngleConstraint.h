@@ -29,7 +29,9 @@ public:
     ExternalAngleConstraint(const Line& line1, const Line& line2, const Param& angle)
         : Constraint(std::make_unique<ExternalAngleErrorFunction>()),
         line1_(line1), line2_(line2), angle_(angle)
-    {}
+    {
+        angle_.setConstant();
+    }
 
     std::vector<Param> parameters() const override
     {

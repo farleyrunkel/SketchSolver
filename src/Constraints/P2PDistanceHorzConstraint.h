@@ -25,7 +25,9 @@ public:
     P2PDistanceHorzConstraint(const Point& point1, const Point& point2, const Param& targetDistance)
         : Constraint(std::make_unique<P2PDistanceHorzErrorFunction>()),
         point1_(point1), point2_(point2), targetDistance_(targetDistance)
-    {}
+    {
+        targetDistance_.setConstant();
+    }
 
     std::vector<Param> parameters() const override
     {

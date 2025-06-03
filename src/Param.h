@@ -3,40 +3,50 @@
 
 #include <memory>
 #include <stdexcept>
+#include <functional>
 
 namespace ssr
 {
 
-/// @brief Encapsulates a double* with safe access and default initialization.
+/// @brief Encapsulates a double* with safe access and constant flag.
 class Param
 {
 private:
-    double* value_ = nullptr; ///< Pointer to the parameter value.
+    double* value_ = nullptr;   ///< Pointer to the parameter value.
+    bool isConst_ = false;      ///< Indicates if the parameter is constant (immutable).
 
 public:
-    /// @brief Default constructor, initializes to nullptr.
-    Param() = default;
+    /// @brief Default constructor, initializes to nullptr and non-constant.
+    Param() noexcept = default;
 
     /// @brief Constructs Param from a double pointer.
-    /// @param v Pointer to a double value, or nullptr.
-    explicit Param(double* v) noexcept : value_(v) {}
+    explicit Param(double* v, bool isConst = false) noexcept
+        : value_(v), isConst_(isConst)
+    {}
 
-    /// @brief Constructs Param from a double value, allocating new memory.
-    explicit Param(double v) : value_(new double(v)) {}
+    /// @brief Constructs Param from a double value (allocated internally).
+    explicit Param(double v, bool isConst = false)
+        : value_(new double(v)), isConst_(isConst)
+    {}
 
-    /// @brief Copy constructor, creates a new copy of the value.
-    Param(const Param& other) : value_(other.isValid() ? new double(*other.value_) : nullptr) {}
+    /// @brief Copy constructor (deep copy if valid).
+    Param(const Param& other)
+        : value_(other.isValid() ? new double(*other.value_) : nullptr),
+        isConst_(other.isConst_)
+    {}
 
-    /// @brief Move constructor, transfers ownership.
-    Param(Param&& other) noexcept : value_(other.value_)
+    /// @brief Move constructor.
+    Param(Param&& other) noexcept
+        : value_(other.value_), isConst_(other.isConst_)
     {
         other.value_ = nullptr;
+        other.isConst_ = false;
     }
 
-    /// @brief Destructor, does not delete value (external management).
+    /// @brief Destructor.
     ~Param() = default;
 
-    /// @brief Copy assignment, creates a new copy of the value.
+    /// @brief Copy assignment.
     Param& operator=(const Param& other)
     {
         if(this != &other)
@@ -50,67 +60,95 @@ public:
             {
                 value_ = nullptr;
             }
+            isConst_ = other.isConst_;
         }
         return *this;
     }
 
-    /// @brief Move assignment, transfers ownership.
+    /// @brief Move assignment.
     Param& operator=(Param&& other) noexcept
     {
         if(this != &other)
         {
             value_ = other.value_;
+            isConst_ = other.isConst_;
             other.value_ = nullptr;
+            other.isConst_ = false;
         }
         return *this;
     }
 
-    /// @brief Assigns a double value to the pointed memory.
-    /// @throws std::runtime_error if value is nullptr.
+    /// @brief Assigns a double value.
     Param& operator=(double v)
     {
         if(!isValid()) throw std::runtime_error("Cannot assign to invalid Param");
+        if(isConst_) throw std::runtime_error("Cannot assign to constant Param");
         *value_ = v;
         return *this;
     }
 
-    /// @brief Checks if the pointer is valid.
+    /// @brief Checks if pointer is valid.
     bool isValid() const noexcept { return value_ != nullptr; }
 
-    /// @brief Converts to raw double* for compatibility.
+    /// @brief Raw pointer access.
     explicit operator double* () const noexcept { return value_; }
 
-	/// @brief Dereferences the pointer, with safety check.
-	/// @throws std::runtime_error if value is nullptr.
-	double& operator*() const
-	{
-		if(!isValid()) throw std::runtime_error("Invalid Param dereference");
-		return *value_;
-	}
+    /// @brief Dereference with check.
+    double& operator*() const
+    {
+        if(!isValid()) throw std::runtime_error("Invalid Param dereference");
+        return *value_;
+    }
 
-    /// @brief Converts to double reference, with safety check.
-    /// @throws std::runtime_error if value is nullptr.
+    /// @brief Reference conversion.
     operator double& () const
     {
         if(!isValid()) throw std::runtime_error("Invalid Param dereference");
         return *value_;
     }
 
-    /// @brief Converts to double value, with safety check.
-    /// @throws std::runtime_error if value is nullptr.
+    /// @brief Value conversion.
     operator double() const
     {
         if(!isValid()) throw std::runtime_error("Invalid Param dereference");
         return *value_;
     }
 
-    /// @brief Equality comparison based on pointer address.
+    /// @brief Equality (by address).
     bool operator==(const Param& other) const noexcept { return value_ == other.value_; }
 
-    /// @brief Inequality comparison based on pointer address.
+    /// @brief Inequality (by address).
     bool operator!=(const Param& other) const noexcept { return value_ != other.value_; }
+
+    /// @brief Strict weak ordering for map/set.
+    bool operator<(const Param& other) const noexcept
+    {
+        return value_ < other.value_;
+    }
+
+    /// @brief Whether the parameter is constant.
+    bool isConstant() const noexcept { return isConst_; }
+
+    /// @brief Sets constant flag.
+    void setConstant(bool isConst = true) noexcept { isConst_ = isConst; }
+
+    /// @brief Returns underlying raw pointer for hashing.
+    double* rawPtr() const noexcept { return value_; }
 };
 
-} // namespace SketchSolver
+} // namespace ssr
+
+/// @brief Custom hash function for Param (for unordered_map/set)
+namespace std
+{
+template <>
+struct hash<ssr::Param>
+{
+    std::size_t operator()(const ssr::Param& p) const noexcept
+    {
+        return std::hash<double*>{}(p.rawPtr());
+    }
+};
+}
 
 #endif // SKETCHSOLVER_CONSTRAINTS_GEOMETRY_H

@@ -7,52 +7,41 @@
 #include "../Constraint.h"
 #include "../Param.h"
 #include "../Segments/Point.h"
+#include "../Segments/Arc.h"
 
 namespace ssr
 {
 
 class PointOnArcAngleErrorFunction;
 
-/// @brief Constraint that ensures a point lies on an arc defined by center, radius, and angle.
+/// @brief Constraint that ensures a point lies on a circular arc at a given angle.
 class PointOnArcAngleConstraint : public Constraint
 {
 private:
     Point point_;
-    Param centerX_, centerY_;
-    Param radius_, angle_;
+    Arc arc_;
 
 public:
-    PointOnArcAngleConstraint(
-        const Point& point,
-        const Param& centerX,
-        const Param& centerY,
-        const Param& radius,
-        const Param& angle)
+    PointOnArcAngleConstraint(const Point& point, const Arc& arc)
         : Constraint(std::make_unique<PointOnArcAngleErrorFunction>()),
-        point_(point), centerX_(centerX), centerY_(centerY),
-        radius_(radius), angle_(angle)
+        point_(point), arc_(arc)
     {}
 
     std::vector<Param> parameters() const override
     {
         auto params = point_.parameters();
-        params.push_back(centerX_);
-        params.push_back(centerY_);
-        params.push_back(radius_);
-        params.push_back(angle_);
+        auto arcParams = arc_.center().parameters();
+        params.insert(params.end(), arcParams.begin(), arcParams.end());
+        params.push_back(arc_.radius());
         return params;
     }
 
     bool isValid() const override
     {
-        return point_.isValid()
-            && centerX_.isValid()
-            && centerY_.isValid()
-            && radius_.isValid()
-            && angle_.isValid();
+        return point_.isValid() && arc_.isValid();
     }
 };
 
-}
+} // namespace ssr
 
 #endif // PointOnArcAngleConstraint_H

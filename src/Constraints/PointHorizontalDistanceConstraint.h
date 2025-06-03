@@ -25,7 +25,9 @@ private:
 public:
     PointHorizontalDistanceConstraint(const Point& p1, const Point& p2, const Param& distance)
         : Constraint(std::make_unique<PointHorizontalDistanceErrorFunction>()), p1_(p1), p2_(p2), distance_(distance)
-    {}
+    {
+        distance_.setConstant();
+    }
 
     std::vector<Param> parameters() const override
     {

@@ -31,6 +31,12 @@ public:
         params.insert(params.end(), params2.begin(), params2.end());
         return params;
     }
+    /// @brief Checks if a parameter is variant.
+    virtual bool isVariant(int i) const 
+    {
+		// Assuming both lines are defined by 4 parameters each (x1, y1, x2, y2)
+		return i < 8 && i >= 0; // First 8 parameters correspond to the two lines
+    }
 
     bool isValid() const override
     {

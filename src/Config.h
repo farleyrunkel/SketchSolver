@@ -8,13 +8,13 @@ namespace ssr
 
 constexpr double Pi = 3.14159265358979323846;
 
-constexpr double PertMag = 1e-6;
-constexpr double PertMin = 1e-10;
-constexpr double XConvergenceRough = 1e-8;
-constexpr double XConvergenceFine = 1e-10;
-constexpr double SmallF = 1e-20;
-constexpr double ValidSolutionFine = 1e-12;
-constexpr double ValidSolutionRough = 1e-4;
+constexpr double pertMag = 1e-6;
+constexpr double pertMin = 1e-10;
+constexpr double XconvergenceRough = 1e-8;
+constexpr double XconvergenceFine = 1e-10;
+constexpr double smallF = 1e-20;
+constexpr double validSolutionFine = 1e-12;
+constexpr double validSoltuionRough = 1e-4;
 constexpr int MaxIterations = 50;
 
 }

@@ -5,6 +5,7 @@ project ("SketchSolver")
 
 # Recursively find all source and header files
 file(GLOB PROJECT_SOURCES
+    "${CMAKE_SOURCE_DIR}/SketchSolver.h"
     "${CMAKE_SOURCE_DIR}/src/*.h"
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
 )

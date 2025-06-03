@@ -27,7 +27,9 @@ public:
     LineLengthConstraint(const Line& line, const Param& length)
         : Constraint(std::make_unique<LineLengthErrorFunction>()),
         line_(line), length_(length)
-    {}
+    {
+        length_.setConstant();
+    }
 
     std::vector<Param> parameters() const override
     {

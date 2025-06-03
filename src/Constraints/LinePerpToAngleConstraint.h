@@ -23,7 +23,9 @@ private:
 public:
     LinePerpToAngleConstraint(const Line& line, const Param& angle)
         : Constraint(std::make_unique<LinePerpToAngleErrorFunction>()), line_(line), angle_(angle)
-    {}
+    {
+        angle_.setConstant();
+    }
 
     std::vector<Param> parameters() const override
     {

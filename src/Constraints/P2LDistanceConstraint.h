@@ -26,7 +26,9 @@ public:
     P2LDistanceConstraint(const Line& line, const Point& point, const Param& distance)
         : Constraint(std::make_unique<P2LDistanceErrorFunction>()),
         line_(line), point_(point), distance_(distance)
-    {}
+    {
+        distance_.setConstant();
+    }
 
     std::vector<Param> parameters() const override
     {

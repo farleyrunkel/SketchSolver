@@ -35,6 +35,8 @@ public:
 
     std::vector<Param> parameters() const override
     {
+        checkPrameters();
+
         auto params1 = arc1_.parameters();
         auto params2 = arc2_.parameters();
         if(params1.size() != 5 || params2.size() != 5)
